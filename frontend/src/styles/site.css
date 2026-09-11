@@ -1,0 +1,721 @@
+/* Chapa Cuts — one hand-written stylesheet.
+   A neighbourhood kinyozi: signpainter's condensed type, pole red and blue, plain white paper. */
+
+:root {
+  --paper: #f7f6f2;
+  --ink: #1c1c1e;
+  --mute: #5f5f66;
+  --line: #d9d7d0;
+  --blue: #1e3e9c;
+  --red: #c8342b;
+  --green: #17734a;
+  --field: #ffffff;
+
+  --display: 'Barlow Condensed', 'Arial Narrow', Impact, sans-serif;
+  --body: 'Barlow', 'Helvetica Neue', Arial, sans-serif;
+
+  --radius: 4px;
+  --gap: 1rem;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 0 1rem 3rem;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 1.0625rem;
+  line-height: 1.5;
+}
+
+main,
+.masthead,
+.foot {
+  max-width: 34rem;
+  margin-inline: 0;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--display);
+  font-weight: 700;
+  line-height: 1.05;
+  margin: 0 0 0.5rem;
+  letter-spacing: 0.005em;
+}
+
+h1 {
+  font-size: 2.75rem;
+}
+
+h2 {
+  font-size: 1.75rem;
+}
+
+p {
+  margin: 0 0 0.75rem;
+}
+
+a {
+  color: var(--blue);
+}
+
+.muted {
+  color: var(--mute);
+}
+
+.small {
+  font-size: 0.9375rem;
+}
+
+:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 2px;
+}
+
+.skip {
+  position: absolute;
+  left: -999px;
+  top: 0.5rem;
+  background: var(--ink);
+  color: #fff;
+  padding: 0.5rem 0.75rem;
+  z-index: 10;
+}
+
+.skip:focus-visible {
+  left: 1rem;
+}
+
+/* ---- Masthead --------------------------------------------------------------------------------------- */
+
+.masthead {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.25rem 0 1rem;
+  border-bottom: 2px solid var(--ink);
+  margin-bottom: 1.5rem;
+}
+
+.brand {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 1.75rem;
+  color: var(--ink);
+  text-decoration: none;
+  letter-spacing: 0.01em;
+}
+
+.pole {
+  display: inline-block;
+  width: 0.75rem;
+  height: 1.75rem;
+  border-radius: 999px;
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--red) 0 4px,
+    #fff 4px 8px,
+    var(--blue) 8px 12px,
+    #fff 12px 16px
+  );
+  border: 1px solid var(--line);
+}
+
+.foot {
+  margin-top: 3rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+  color: var(--mute);
+  font-size: 0.9375rem;
+}
+
+/* ---- Intro ------------------------------------------------------------------------------------------ */
+
+.intro {
+  margin-bottom: 2rem;
+}
+
+.intro p {
+  max-width: 30rem;
+}
+
+/* ---- Steps ------------------------------------------------------------------------------------------ */
+
+.step {
+  padding: 1.25rem 0 1.5rem;
+  border-top: 1px solid var(--line);
+}
+
+.step:first-of-type {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.step-title {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+}
+
+.step-num {
+  font-family: var(--display);
+  font-weight: 600;
+  color: var(--mute);
+  font-size: 1.125rem;
+}
+
+/* ---- Cut list --------------------------------------------------------------------------------------- */
+
+.cuts {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.cut {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 0.75rem 0.875rem;
+  background: var(--field);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.cut input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+.cut:has(input:checked) {
+  border-color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--ink);
+}
+
+.cut:has(input:focus-visible) {
+  outline: 3px solid var(--blue);
+  outline-offset: 2px;
+}
+
+.cut-name {
+  font-weight: 600;
+}
+
+.cut-price {
+  color: var(--mute);
+  font-variant-numeric: tabular-nums;
+}
+
+.other-box {
+  margin-top: 0.75rem;
+  padding: 0.875rem;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius);
+  background: var(--field);
+}
+
+.thumb {
+  display: block;
+  max-width: 10rem;
+  max-height: 10rem;
+  margin-top: 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+/* ---- Day tabs and slot grid ------------------------------------------------------------------------- */
+
+.days {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.875rem;
+  flex-wrap: wrap;
+}
+
+.day {
+  flex: 1 1 5.5rem;
+  padding: 0.5rem 0.625rem;
+  background: var(--field);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  color: var(--ink);
+}
+
+.day b {
+  display: block;
+  font-weight: 600;
+}
+
+.day span {
+  display: block;
+  font-size: 0.875rem;
+  color: var(--mute);
+}
+
+.day[aria-pressed='true'] {
+  border-color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--ink);
+}
+
+.slots {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+  min-height: 3rem;
+}
+
+.slot {
+  padding: 0.625rem 0.25rem;
+  font: inherit;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 1.125rem;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  background: var(--field);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+}
+
+.slot[disabled] {
+  cursor: not-allowed;
+  color: var(--mute);
+  background: transparent;
+  border-style: dashed;
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+  text-decoration-color: var(--red);
+}
+
+.slot[aria-pressed='true'] {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: #fff;
+}
+
+.slots-note {
+  margin-top: 0.75rem;
+  font-size: 0.9375rem;
+  color: var(--mute);
+}
+
+.slots-empty {
+  grid-column: 1 / -1;
+  color: var(--mute);
+}
+
+/* ---- Forms ------------------------------------------------------------------------------------------ */
+
+.field {
+  display: block;
+  margin-bottom: 0.875rem;
+}
+
+.field span {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.field small {
+  display: block;
+  color: var(--mute);
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+input[type='text'],
+input[type='tel'],
+input[type='email'],
+textarea {
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  font: inherit;
+  color: var(--ink);
+  background: var(--field);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+input[type='file'] {
+  font: inherit;
+  max-width: 100%;
+}
+
+textarea {
+  min-height: 5rem;
+  resize: vertical;
+}
+
+.btn {
+  display: inline-block;
+  padding: 0.7rem 1.1rem;
+  font: inherit;
+  font-weight: 600;
+  color: #fff;
+  background: var(--blue);
+  border: 1px solid var(--blue);
+  border-radius: var(--radius);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn[disabled] {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.btn-secondary {
+  color: var(--ink);
+  background: var(--field);
+  border-color: var(--ink);
+}
+
+.error-text {
+  color: var(--red);
+  font-weight: 600;
+}
+
+.form-error {
+  margin: 0.5rem 0 0;
+  color: var(--red);
+  font-weight: 600;
+}
+
+.form-error:empty {
+  display: none;
+}
+
+/* ---- Summary and payment ---------------------------------------------------------------------------- */
+
+.summary {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.25rem 1rem;
+  margin: 0 0 1.25rem;
+  padding: 0.875rem;
+  background: var(--field);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.summary dt {
+  color: var(--mute);
+}
+
+.summary dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.pay-options {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.pay-option {
+  padding: 0.875rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--field);
+}
+
+.pay-option h3 {
+  font-size: 1.375rem;
+}
+
+.pay-option .field {
+  margin-bottom: 0.625rem;
+}
+
+/* ---- Result ----------------------------------------------------------------------------------------- */
+
+.waiting {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  padding: 0.875rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--field);
+}
+
+.waiting-title {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 1.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.waiting-dot {
+  flex: none;
+  width: 0.75rem;
+  height: 0.75rem;
+  margin-top: 0.55rem;
+  border-radius: 50%;
+  background: var(--blue);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+
+.simulate {
+  margin-top: 0.75rem;
+  font-size: 0.875rem;
+}
+
+.simulate a {
+  color: var(--mute);
+}
+
+.notice {
+  padding: 0.875rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--field);
+}
+
+.notice-bad {
+  border-color: var(--red);
+}
+
+.notice-title {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 1.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.notice .btn {
+  margin-top: 0.5rem;
+}
+
+/* The one memorable thing: the ticket. Pole stripe down the left, big reference like a queue number. */
+.ticket {
+  position: relative;
+  padding: 1.25rem 1.25rem 1.25rem 1.75rem;
+  background: #fff;
+  border: 1px solid var(--ink);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.ticket::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0.75rem;
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--red) 0 6px,
+    #fff 6px 12px,
+    var(--blue) 12px 18px,
+    #fff 18px 24px
+  );
+  border-right: 1px solid var(--ink);
+}
+
+.ticket-kicker {
+  font-weight: 600;
+  color: var(--green);
+  margin-bottom: 0.25rem;
+}
+
+.ticket-ref {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 3.25rem;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  margin: 0 0 0.25rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.ticket-hint {
+  color: var(--mute);
+  margin-bottom: 1rem;
+}
+
+.ticket-rows {
+  margin: 0;
+  border-top: 1px dashed var(--line);
+}
+
+.ticket-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px dashed var(--line);
+}
+
+.ticket-row dt {
+  color: var(--mute);
+}
+
+.ticket-row dd {
+  margin: 0;
+  font-weight: 600;
+  text-align: right;
+}
+
+.ticket-receipt {
+  margin: 0.75rem 0 0;
+  color: var(--mute);
+  font-size: 0.9375rem;
+}
+
+/* ---- Barber page ------------------------------------------------------------------------------------ */
+
+.warn {
+  padding: 0.625rem 0.875rem;
+  border-left: 4px solid var(--red);
+  background: var(--field);
+  font-size: 0.9375rem;
+  margin-bottom: 1.25rem;
+}
+
+.day-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+}
+
+.day-item {
+  display: grid;
+  grid-template-columns: 4.25rem 1fr;
+  gap: 0.25rem 0.75rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.day-time {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 1.5rem;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+.day-who {
+  font-weight: 600;
+}
+
+.day-meta {
+  color: var(--mute);
+  font-size: 0.9375rem;
+}
+
+.day-item.seeded .day-who {
+  color: var(--mute);
+  font-weight: 400;
+}
+
+.deposit {
+  display: inline-block;
+  padding: 0.05rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: 1px solid currentColor;
+}
+
+.deposit-paid {
+  color: var(--green);
+}
+
+.deposit-pending {
+  color: var(--red);
+}
+
+.day-note {
+  grid-column: 2;
+  margin: 0.25rem 0 0;
+}
+
+.day-photo {
+  grid-column: 2;
+  display: block;
+  max-width: 14rem;
+  max-height: 14rem;
+  margin-top: 0.375rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.status-line {
+  color: var(--mute);
+  font-size: 0.9375rem;
+  margin-top: 1rem;
+}
+
+/* ---- Motion ----------------------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .waiting-dot {
+    animation: none;
+  }
+
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* ---- Narrow screens --------------------------------------------------------------------------------- */
+
+@media (max-width: 400px) {
+  h1 {
+    font-size: 2.375rem;
+  }
+
+  .ticket-ref {
+    font-size: 2.75rem;
+    letter-spacing: 0.06em;
+  }
+
+  .summary {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .summary dt {
+    margin-top: 0.4rem;
+  }
+}

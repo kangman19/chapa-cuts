@@ -1,0 +1,63 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="Chapa Cuts · Your booking">
+  <div class="intro">
+    <h1>Your booking</h1>
+  </div>
+  <div id="result">
+    <p class="muted">Checking with the card provider…</p>
+  </div>
+</Base>
+
+<script>
+  import { api } from '../lib/api';
+  import { pollUntilSettled, renderGaveUp, renderResult } from '../lib/result';
+
+  const resultEl = document.getElementById('result') as HTMLElement;
+  const ref = new URLSearchParams(window.location.search).get('ref')?.trim().toUpperCase() ?? '';
+
+  function fail(message: string) {
+    resultEl.replaceChildren();
+    const p = document.createElement('p');
+    p.className = 'error-text';
+    p.textContent = message;
+    const a = document.createElement('a');
+    a.className = 'btn';
+    a.href = '/';
+    a.textContent = 'Back to booking';
+    resultEl.append(p, a);
+  }
+
+  async function start() {
+    if (!ref) {
+      fail("There's no booking reference in this link, so we can't look anything up.");
+      return;
+    }
+    let days: string[] = [];
+    try {
+      days = (await api.availability()).days;
+    } catch {
+      // day labels fall back to dates only
+    }
+    const opts = { days };
+    try {
+      const first = await api.get(ref);
+      renderResult(resultEl, first, opts);
+      if (first.status !== 'AWAITING_PAYMENT') return;
+      pollUntilSettled(
+        ref,
+        (b) => {
+          if (resultEl.dataset.status !== b.status) renderResult(resultEl, b, opts);
+        },
+        () => renderGaveUp(resultEl, ref, start),
+        fail,
+      );
+    } catch (err: any) {
+      fail(err.message);
+    }
+  }
+
+  start();
+</script>

@@ -1,0 +1,29 @@
+server:
+  port: ${PORT:8080}
+
+spring:
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
+
+mpesa:
+  base-url: https://sandbox.safaricom.co.ke
+  consumer-key: ${MPESA_CONSUMER_KEY:}
+  consumer-secret: ${MPESA_CONSUMER_SECRET:}
+  passkey: ${MPESA_PASSKEY:}
+  shortcode: ${MPESA_SHORTCODE:174379}
+  callback-url: ${MPESA_CALLBACK_URL:}
+
+paystack:
+  base-url: https://api.paystack.co
+  secret-key: ${PAYSTACK_SECRET_KEY:}
+  currency: ${CARD_CURRENCY:KES}
+  return-url: ${CARD_RETURN_URL:http://localhost:8080/paid.html}
+
+demo:
+  allow-simulate: true
+
+logging:
+  level:
+    ke.chapacuts: INFO

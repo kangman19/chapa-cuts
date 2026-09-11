@@ -1,0 +1,125 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="Chapa Cuts · Shop view">
+  <div class="intro">
+    <h1>Shop view</h1>
+    <p class="warn">
+      This page has no login. It's open to anyone with the link because this is a demo; in production it sits behind a
+      barber login.
+    </p>
+  </div>
+  <div class="days" id="days" role="group" aria-label="Day"></div>
+  <ul class="day-list" id="list" aria-live="polite">
+    <li class="day-item"><span class="day-meta">Loading…</span></li>
+  </ul>
+  <p class="status-line" id="status"></p>
+</Base>
+
+<script>
+  import { api, dayName, money, prettyPhone, shortDate, type BarberDay, type BarberEntry } from '../lib/api';
+
+  const REFRESH_MS = 10_000;
+  const daysEl = document.getElementById('days') as HTMLElement;
+  const listEl = document.getElementById('list') as HTMLElement;
+  const statusEl = document.getElementById('status') as HTMLElement;
+
+  let selectedDate: string | undefined;
+  let days: string[] = [];
+  let timer: number | undefined;
+
+  function el<K extends keyof HTMLElementTagNameMap>(tag: K, className?: string, text?: string) {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text !== undefined) node.textContent = text;
+    return node;
+  }
+
+  function renderDays() {
+    daysEl.replaceChildren();
+    for (const d of days) {
+      const btn = el('button', 'day');
+      btn.type = 'button';
+      btn.setAttribute('aria-pressed', String(d === selectedDate));
+      btn.append(el('b', undefined, dayName(d, days)), el('span', undefined, shortDate(d)));
+      btn.addEventListener('click', () => {
+        selectedDate = d;
+        renderDays();
+        load();
+      });
+      daysEl.append(btn);
+    }
+  }
+
+  function renderEntry(e: BarberEntry): HTMLElement {
+    const li = el('li', 'day-item');
+    li.append(el('span', 'day-time', e.time));
+    if (e.seeded) {
+      li.classList.add('seeded');
+      li.append(el('span', 'day-who', 'Booked at the shop'));
+      return li;
+    }
+    const who = el('div');
+    who.append(el('span', 'day-who', e.customerName ?? ''));
+    who.append(el('span', 'day-meta', ` · ${prettyPhone(e.phone ?? '')}`));
+    li.append(who);
+
+    const meta = el('div', 'day-meta');
+    meta.style.gridColumn = '2';
+    const cut = e.price == null ? `${e.serviceName} · price at the shop` : `${e.serviceName} · ${money(e.price)}`;
+    meta.append(document.createTextNode(cut + ' · '));
+    const badge = e.status === 'CONFIRMED'
+      ? el('span', 'deposit deposit-paid', 'Deposit paid')
+      : el('span', 'deposit deposit-pending', 'Deposit pending');
+    meta.append(badge);
+    meta.append(document.createTextNode(` · ${e.ref}`));
+    li.append(meta);
+
+    if (e.note) li.append(el('p', 'day-note', e.note));
+    if (e.imageId) {
+      const img = el('img', 'day-photo');
+      img.src = `/api/uploads/${e.imageId}`;
+      img.alt = `Reference photo from ${e.customerName ?? 'the customer'}`;
+      img.loading = 'lazy';
+      li.append(img);
+    }
+    return li;
+  }
+
+  async function load() {
+    let day: BarberDay;
+    try {
+      day = await api.barberDay(selectedDate);
+    } catch (err: any) {
+      statusEl.textContent = err.message;
+      return;
+    }
+    if (selectedDate && day.date !== selectedDate) return;
+    if (days.length === 0) {
+      days = day.days;
+      selectedDate = day.date;
+      renderDays();
+    }
+    listEl.replaceChildren();
+    if (day.bookings.length === 0) {
+      const li = el('li', 'day-item');
+      li.append(el('span', 'day-time', '—'), el('span', 'day-meta', 'Nothing booked yet.'));
+      listEl.append(li);
+    }
+    for (const e of day.bookings) listEl.append(renderEntry(e));
+    const now = new Date();
+    statusEl.textContent = `Updated ${now.toLocaleTimeString('en-KE', { hour: '2-digit', minute: '2-digit' })} · refreshes every 10 seconds`;
+  }
+
+  load();
+  timer = window.setInterval(load, REFRESH_MS);
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      window.clearInterval(timer);
+    } else {
+      load();
+      timer = window.setInterval(load, REFRESH_MS);
+    }
+  });
+</script>

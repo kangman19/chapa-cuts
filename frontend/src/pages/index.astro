@@ -1,0 +1,431 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="Chapa Cuts · Book the chair">
+  <div class="intro">
+    <h1>Book the chair</h1>
+    <p>
+      Pick a cut and a time. A KSh 200 deposit by M-Pesa or card holds your slot; you pay the rest at the shop.
+    </p>
+  </div>
+
+  <section class="step" id="step-cut" aria-labelledby="h-cut">
+    <div class="step-title">
+      <span class="step-num" aria-hidden="true">1</span>
+      <h2 id="h-cut">Pick a cut</h2>
+    </div>
+    <fieldset class="cuts" id="cuts" aria-label="Cuts">
+      <p class="muted">Loading the menu…</p>
+    </fieldset>
+    <div class="other-box" id="other-box" hidden>
+      <p class="small">Tell us what you're after. The price is confirmed at the shop; the deposit is still KSh 200.</p>
+      <label class="field">
+        <span>A photo of the style (optional)</span>
+        <input type="file" id="photo" accept="image/jpeg,image/png,image/webp" />
+        <small>JPEG, PNG or WebP, up to 5 MB.</small>
+      </label>
+      <img class="thumb" id="thumb" alt="Preview of the photo you chose" hidden />
+      <p class="form-error" id="photo-error" aria-live="polite"></p>
+      <label class="field">
+        <span>Describe it</span>
+        <textarea id="note" maxlength="500" placeholder="e.g. low fade with a hard part on the left"></textarea>
+      </label>
+    </div>
+  </section>
+
+  <section class="step" id="step-time" aria-labelledby="h-time" hidden>
+    <div class="step-title">
+      <span class="step-num" aria-hidden="true">2</span>
+      <h2 id="h-time">Pick a time</h2>
+    </div>
+    <div class="days" id="days" role="group" aria-label="Day"></div>
+    <div class="slots" id="slots" role="group" aria-label="Time"></div>
+    <p class="slots-note">Crossed-out times are taken. Each cut takes 30 minutes.</p>
+  </section>
+
+  <section class="step" id="step-details" aria-labelledby="h-details" hidden>
+    <div class="step-title">
+      <span class="step-num" aria-hidden="true">3</span>
+      <h2 id="h-details">Your details</h2>
+    </div>
+    <form id="details-form" novalidate>
+      <label class="field">
+        <span>Name</span>
+        <input type="text" id="name" autocomplete="name" maxlength="80" required />
+      </label>
+      <label class="field">
+        <span>Phone</span>
+        <input type="tel" id="phone" autocomplete="tel" inputmode="tel" placeholder="0712 345 678" required />
+        <small>So the barber can reach you.</small>
+      </label>
+      <p class="form-error" id="details-error" aria-live="polite"></p>
+      <button class="btn" type="submit">Continue</button>
+    </form>
+  </section>
+
+  <section class="step" id="step-pay" aria-labelledby="h-pay" hidden>
+    <div class="step-title">
+      <span class="step-num" aria-hidden="true">4</span>
+      <h2 id="h-pay">Hold your slot</h2>
+    </div>
+    <dl class="summary" id="summary"></dl>
+    <div class="pay-options">
+      <div class="pay-option">
+        <h3>Pay the deposit with M-Pesa</h3>
+        <form id="mpesa-form" novalidate>
+          <label class="field">
+            <span>M-Pesa number</span>
+            <input type="tel" id="mpesa-phone" inputmode="tel" autocomplete="tel" required />
+            <small>Prompts only reach Safaricom numbers.</small>
+          </label>
+          <p class="form-error" id="mpesa-error" aria-live="polite"></p>
+          <button class="btn" type="submit">Send M-Pesa prompt</button>
+        </form>
+      </div>
+      <div class="pay-option">
+        <h3>Or pay by card</h3>
+        <form id="card-form" novalidate>
+          <label class="field">
+            <span>Email for the receipt</span>
+            <input type="email" id="card-email" autocomplete="email" inputmode="email" required />
+          </label>
+          <p class="form-error" id="card-error" aria-live="polite"></p>
+          <button class="btn btn-secondary" type="submit">Pay KSh 200 by card</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <section class="step" id="step-result" aria-labelledby="h-result" hidden>
+    <div class="step-title">
+      <span class="step-num" aria-hidden="true">5</span>
+      <h2 id="h-result">Your booking</h2>
+    </div>
+    <div id="result"></div>
+  </section>
+</Base>
+
+<script>
+  import { api, ApiError, dayLabel, dayName, money, reducedMotion, shortDate, type Availability, type Booking, type Service } from '../lib/api';
+  import { pollUntilSettled, renderGaveUp, renderResult } from '../lib/result';
+
+  // ---- State ----------------------------------------------------------------------------------------
+  let services: Service[] = [];
+  let days: string[] = [];
+  let selectedService: Service | null = null;
+  let selectedDate: string | null = null;
+  let selectedTime: string | null = null;
+  let imageId: string | null = null;
+  let booking: Booking | null = null;
+  let poller: { stop: () => void } | null = null;
+
+  // ---- Elements -------------------------------------------------------------------------------------
+  const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+  const stepTime = $('step-time');
+  const stepDetails = $('step-details');
+  const stepPay = $('step-pay');
+  const stepResult = $('step-result');
+  const cutsEl = $('cuts');
+  const otherBox = $('other-box');
+  const photoInput = $<HTMLInputElement>('photo');
+  const thumb = $<HTMLImageElement>('thumb');
+  const photoError = $('photo-error');
+  const noteInput = $<HTMLTextAreaElement>('note');
+  const daysEl = $('days');
+  const slotsEl = $('slots');
+  const detailsForm = $<HTMLFormElement>('details-form');
+  const nameInput = $<HTMLInputElement>('name');
+  const phoneInput = $<HTMLInputElement>('phone');
+  const detailsError = $('details-error');
+  const summaryEl = $('summary');
+  const mpesaForm = $<HTMLFormElement>('mpesa-form');
+  const mpesaPhone = $<HTMLInputElement>('mpesa-phone');
+  const mpesaError = $('mpesa-error');
+  const cardForm = $<HTMLFormElement>('card-form');
+  const cardEmail = $<HTMLInputElement>('card-email');
+  const cardError = $('card-error');
+  const resultEl = $('result');
+
+  function reveal(section: HTMLElement) {
+    const wasHidden = section.hidden;
+    section.hidden = false;
+    if (wasHidden) {
+      section.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'start' });
+    }
+  }
+
+  const ORDER = [stepTime, stepDetails, stepPay, stepResult];
+
+  /** Hides `section` and every step after it. Any booking in progress is forgotten. */
+  function hideFrom(section: HTMLElement) {
+    for (const s of ORDER.slice(ORDER.indexOf(section))) s.hidden = true;
+    booking = null;
+    poller?.stop();
+  }
+
+  // ---- Step 1: cut ----------------------------------------------------------------------------------
+  function renderCuts() {
+    cutsEl.replaceChildren();
+    for (const s of services) {
+      const label = document.createElement('label');
+      label.className = 'cut';
+      const input = document.createElement('input');
+      input.type = 'radio';
+      input.name = 'cut';
+      input.value = s.id;
+      const name = document.createElement('span');
+      name.className = 'cut-name';
+      name.textContent = s.name;
+      const price = document.createElement('span');
+      price.className = 'cut-price';
+      price.textContent = s.price == null ? 'Priced at the shop' : money(s.price);
+      label.append(input, name, price);
+      input.addEventListener('change', () => chooseCut(s));
+      cutsEl.append(label);
+    }
+  }
+
+  function chooseCut(s: Service) {
+    selectedService = s;
+    otherBox.hidden = s.id !== 'other';
+    hideFrom(stepDetails);
+    selectedTime = null;
+    reveal(stepTime);
+    if (!selectedDate) selectedDate = days[0];
+    renderDays();
+    loadSlots();
+  }
+
+  photoInput.addEventListener('change', async () => {
+    photoError.textContent = '';
+    imageId = null;
+    thumb.hidden = true;
+    const file = photoInput.files?.[0];
+    if (!file) return;
+    thumb.src = URL.createObjectURL(file);
+    thumb.hidden = false;
+    try {
+      const res = await api.upload(file);
+      imageId = res.imageId;
+    } catch (err: any) {
+      photoError.textContent = err.message;
+      thumb.hidden = true;
+      photoInput.value = '';
+    }
+  });
+
+  // ---- Step 2: time ---------------------------------------------------------------------------------
+  function renderDays() {
+    daysEl.replaceChildren();
+    for (const d of days) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'day';
+      btn.setAttribute('aria-pressed', String(d === selectedDate));
+      const b = document.createElement('b');
+      b.textContent = dayName(d, days);
+      const span = document.createElement('span');
+      span.textContent = shortDate(d);
+      btn.append(b, span);
+      btn.addEventListener('click', () => {
+        if (selectedDate === d) return;
+        selectedDate = d;
+        selectedTime = null;
+        hideFrom(stepDetails);
+        renderDays();
+        loadSlots();
+      });
+      daysEl.append(btn);
+    }
+  }
+
+  async function loadSlots() {
+    if (!selectedDate) return;
+    slotsEl.setAttribute('aria-busy', 'true');
+    let av: Availability;
+    try {
+      av = await api.availability(selectedDate);
+    } catch (err: any) {
+      slotsEl.replaceChildren(Object.assign(document.createElement('p'), { className: 'slots-empty', textContent: err.message }));
+      slotsEl.removeAttribute('aria-busy');
+      return;
+    }
+    if (av.date !== selectedDate) return; // a newer day was chosen while this loaded
+    slotsEl.replaceChildren();
+    let anyOpen = false;
+    for (const slot of av.slots) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'slot';
+      btn.textContent = slot.time;
+      if (!slot.available) {
+        btn.disabled = true;
+        btn.setAttribute('aria-label', `${slot.time}, taken`);
+      } else {
+        anyOpen = true;
+        btn.setAttribute('aria-pressed', String(slot.time === selectedTime));
+        btn.addEventListener('click', () => chooseTime(slot.time));
+      }
+      slotsEl.append(btn);
+    }
+    if (!anyOpen) {
+      const p = document.createElement('p');
+      p.className = 'slots-empty';
+      p.textContent = 'Nothing left on this day. Try another.';
+      slotsEl.append(p);
+    }
+    slotsEl.removeAttribute('aria-busy');
+  }
+
+  function chooseTime(time: string) {
+    selectedTime = time;
+    for (const b of slotsEl.querySelectorAll<HTMLButtonElement>('.slot:not([disabled])')) {
+      b.setAttribute('aria-pressed', String(b.textContent === time));
+    }
+    hideFrom(stepPay);
+    reveal(stepDetails);
+    if (!nameInput.value) nameInput.focus({ preventScroll: true });
+  }
+
+  // ---- Step 3: details ------------------------------------------------------------------------------
+  detailsForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    detailsError.textContent = '';
+    if (!nameInput.value.trim()) {
+      detailsError.textContent = 'Tell us your name.';
+      nameInput.focus();
+      return;
+    }
+    if (!phoneInput.value.trim()) {
+      detailsError.textContent = 'Enter your phone number.';
+      phoneInput.focus();
+      return;
+    }
+    booking = null;
+    mpesaPhone.value = phoneInput.value.trim();
+    renderSummary();
+    reveal(stepPay);
+  });
+
+  // The pay step is only reachable through the form, so re-submitting it after edits keeps things in sync.
+  for (const input of [nameInput, phoneInput]) {
+    input.addEventListener('input', () => hideFrom(stepPay));
+  }
+
+  function renderSummary() {
+    if (!selectedService || !selectedDate || !selectedTime) return;
+    summaryEl.replaceChildren();
+    const rows: [string, string][] = [
+      ['Cut', selectedService.name],
+      ['Day', dayLabel(selectedDate, days)],
+      ['Time', selectedTime],
+      ['Deposit now', money(200)],
+      ['At the shop', selectedService.price == null ? 'Price confirmed at the shop' : money(Math.max(0, selectedService.price - 200))],
+    ];
+    for (const [k, v] of rows) {
+      const dt = document.createElement('dt');
+      dt.textContent = k;
+      const dd = document.createElement('dd');
+      dd.textContent = v;
+      summaryEl.append(dt, dd);
+    }
+  }
+
+  // ---- Step 4: pay ----------------------------------------------------------------------------------
+  /** Reuses a fresh booking if we already have one; otherwise creates it now, right before paying. */
+  async function ensureBooking(): Promise<Booking> {
+    if (booking && booking.status === 'NEW') return booking;
+    if (!selectedService || !selectedDate || !selectedTime) throw new ApiError(0, 'Pick a cut and a time first.');
+    booking = await api.createBooking({
+      serviceId: selectedService.id,
+      date: selectedDate,
+      slotTime: selectedTime,
+      customerName: nameInput.value.trim(),
+      phone: phoneInput.value.trim(),
+      note: selectedService.id === 'other' ? noteInput.value.trim() || undefined : undefined,
+      imageId: selectedService.id === 'other' && imageId ? imageId : undefined,
+    });
+    return booking;
+  }
+
+  function busy(form: HTMLFormElement, on: boolean) {
+    for (const b of form.querySelectorAll('button')) b.disabled = on;
+  }
+
+  mpesaForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    mpesaError.textContent = '';
+    busy(mpesaForm, true);
+    try {
+      const b = await ensureBooking();
+      booking = await api.payMpesa(b.ref, mpesaPhone.value.trim());
+      showResult(booking);
+    } catch (err: any) {
+      mpesaError.textContent = err.message;
+      if (err.status === 404) booking = null;
+      if (booking && booking.status !== 'NEW') booking = null;
+    } finally {
+      busy(mpesaForm, false);
+    }
+  });
+
+  cardForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    cardError.textContent = '';
+    busy(cardForm, true);
+    try {
+      const b = await ensureBooking();
+      booking = await api.payCard(b.ref, cardEmail.value.trim());
+      if (!booking.checkoutUrl) throw new ApiError(0, "We didn't get a card page to send you to. Nothing was charged.");
+      cardError.textContent = '';
+      window.location.href = booking.checkoutUrl;
+      return; // leave the button disabled while the browser navigates
+    } catch (err: any) {
+      cardError.textContent = err.message;
+      if (booking && booking.status !== 'NEW') booking = null;
+      busy(cardForm, false);
+    }
+  });
+
+  // ---- Step 5: result -------------------------------------------------------------------------------
+  function showResult(b: Booking) {
+    poller?.stop();
+    stepPay.hidden = true;
+    reveal(stepResult);
+    const opts = { days, onRetry: retry };
+    renderResult(resultEl, b, opts);
+    if (b.status === 'AWAITING_PAYMENT') {
+      poller = pollUntilSettled(
+        b.ref,
+        (latest) => {
+          booking = latest;
+          if (resultEl.dataset.status !== latest.status) renderResult(resultEl, latest, opts);
+        },
+        () => renderGaveUp(resultEl, b.ref, () => showResult(b)),
+        (message) => {
+          resultEl.replaceChildren(Object.assign(document.createElement('p'), { className: 'error-text', textContent: message }));
+        },
+      );
+    }
+  }
+
+  function retry() {
+    poller?.stop();
+    booking = null;
+    stepResult.hidden = true;
+    reveal(stepPay);
+  }
+
+  // ---- Boot -----------------------------------------------------------------------------------------
+  (async () => {
+    try {
+      const [s, av] = await Promise.all([api.services(), api.availability()]);
+      services = s;
+      days = av.days;
+      renderCuts();
+    } catch (err: any) {
+      cutsEl.replaceChildren(Object.assign(document.createElement('p'), { className: 'error-text', textContent: err.message }));
+    }
+  })();
+</script>

@@ -1,0 +1,40 @@
+---
+import '../styles/site.css';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = 'Book the chair at Chapa Cuts. KSh 200 holds your slot; pay the rest at the shop.' } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en-KE">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="color-scheme" content="light" />
+    <title>{title}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:ital,wght@0,400;0,600;1,400&display=swap"
+    />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="masthead">
+      <a class="brand" href="/">Chapa Cuts</a>
+      <span class="pole" aria-hidden="true"></span>
+    </header>
+    <main id="main">
+      <slot />
+    </main>
+    <footer class="foot">
+      <p>Chapa Cuts · one chair, one barber · open 9:00 to 19:00</p>
+    </footer>
+  </body>
+</html>
