@@ -147,10 +147,17 @@ public class MpesaClient {
             return PaymentOutcome.pending();
         }
         String resultCode = res.text("ResultCode");
+        String resultDesc = res.text("ResultDesc");
+        log.info("STK query for {}: ResultCode={} {}", checkoutRequestId, resultCode, resultDesc);
         if (resultCode == null) {
             return PaymentOutcome.pending();
         }
-        return outcomeFor(resultCode, res.text("ResultDesc"), null);
+        // Sandbox answers the query with a 200 and a "still under processing" result while the customer
+        // hasn't acted yet. That's not a failure; keep waiting.
+        if (resultDesc != null && resultDesc.toLowerCase().contains("processing")) {
+            return PaymentOutcome.pending();
+        }
+        return outcomeFor(resultCode, resultDesc, null);
     }
 
     // ---- Shared result mapping ----------------------------------------------------------------------------
