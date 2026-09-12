@@ -20,6 +20,7 @@ public record BookingResponse(
         String imageId,
         PaymentMethod paymentMethod,
         String checkoutUrl,
+        String accessCode,
         String receipt,
         String message) {
 
@@ -42,6 +43,7 @@ public record BookingResponse(
                 b.imageId(),
                 b.paymentMethod(),
                 b.status() == BookingStatus.AWAITING_PAYMENT ? b.checkoutUrl() : null,
+                b.status() == BookingStatus.AWAITING_PAYMENT ? b.checkoutAccessCode() : null,
                 b.receipt(),
                 b.failureMessage());
     }

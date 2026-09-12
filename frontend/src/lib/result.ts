@@ -40,7 +40,7 @@ export function renderResult(container: HTMLElement, b: Booking, opts: ResultOpt
       );
     } else {
       text.append(
-        el('p', undefined, `Finish paying the ${money(b.deposit)} deposit on the card page.`),
+        el('p', undefined, `Checking your ${money(b.deposit)} card payment.`),
         el('p', 'muted', "We'll confirm here once the card provider tells us it went through. Your slot is held for three minutes."),
       );
     }

@@ -1,6 +1,7 @@
 package ke.chapacuts.payment.paystack;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import ke.chapacuts.api.CustomerFacingException;
 import ke.chapacuts.config.PaystackProperties;
@@ -32,22 +33,27 @@ public class PaystackClient {
         }
     }
 
-    /** Returns the hosted checkout URL to send the customer to. */
-    public String initialize(String email, int amountKsh, String reference) {
+    /** The hosted page URL and the access code the in-page card form (Paystack Popup) resumes with. */
+    public record Checkout(String url, String accessCode) {
+    }
+
+    public Checkout initialize(String email, int amountKsh, String reference) {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("email", email);
         body.put("amount", amountKsh * 100); // Paystack works in the smallest unit
         body.put("currency", props.currency());
         body.put("reference", reference);
         body.put("callback_url", props.returnUrl() + "?ref=" + reference);
+        body.put("channels", List.of("card")); // this button is the card option; M-Pesa has its own
 
         ProviderHttp.Result res = http.postJson(
                 props.baseUrl() + "/transaction/initialize",
                 h -> h.setBearerAuth(props.secretKey()), body);
 
         String url = res.text("data", "authorization_url");
-        if (res.ok() && res.body().path("status").asBoolean(false) && url != null) {
-            return url;
+        String accessCode = res.text("data", "access_code");
+        if (res.ok() && res.body().path("status").asBoolean(false) && url != null && accessCode != null) {
+            return new Checkout(url, accessCode);
         }
         log.warn("Paystack initialize rejected: HTTP {} {}", res.status(), res.body());
         String message = res.text("message");

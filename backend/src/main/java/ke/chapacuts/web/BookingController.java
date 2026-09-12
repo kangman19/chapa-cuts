@@ -26,9 +26,8 @@ public class BookingController {
             @NotBlank(message = "Enter the M-Pesa number to send the prompt to.") String phone) {
     }
 
-    public record CardPayRequest(
-            @NotBlank(message = "Enter an email address for the card receipt.")
-            @Email(message = "That email address doesn't look right.") String email) {
+    /** Email is optional; the in-page card form doesn't collect one. */
+    public record CardPayRequest(@Email(message = "That email address doesn't look right.") String email) {
     }
 
     private final BookingService bookings;
@@ -53,8 +52,8 @@ public class BookingController {
     }
 
     @PostMapping("/{ref}/pay/card")
-    public BookingResponse payCard(@PathVariable String ref, @Valid @RequestBody CardPayRequest req) {
-        return view(payments.payWithCard(ref, req.email()));
+    public BookingResponse payCard(@PathVariable String ref, @Valid @RequestBody(required = false) CardPayRequest req) {
+        return view(payments.payWithCard(ref, req == null ? null : req.email()));
     }
 
     @GetMapping("/{ref}")

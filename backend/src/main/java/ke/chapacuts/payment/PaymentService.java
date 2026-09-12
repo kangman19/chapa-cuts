@@ -52,7 +52,7 @@ public class PaymentService {
         Booking b = bookings.startHold(ref, PaymentMethod.MPESA, phone);
         try {
             String checkoutId = mpesa.stkPush(phone, ServiceCatalog.DEPOSIT, ref);
-            bookings.attachCheckout(b, checkoutId, null);
+            bookings.attachCheckout(b, checkoutId, null, null);
         } catch (CustomerFacingException e) {
             bookings.fail(ref, e.getMessage());
             throw e;
@@ -68,9 +68,11 @@ public class PaymentService {
     public Booking payWithCard(String ref, String email) {
         paystack.requireConfigured();
         Booking b = bookings.startHold(ref, PaymentMethod.CARD, null);
+        // Paystack needs an email on every transaction; the card form doesn't ask for one, so make one from the phone.
+        String customerEmail = email == null || email.isBlank() ? b.phone() + "@chapacuts.co.ke" : email.trim();
         try {
-            String url = paystack.initialize(email.trim(), ServiceCatalog.DEPOSIT, ref);
-            bookings.attachCheckout(b, null, url);
+            PaystackClient.Checkout checkout = paystack.initialize(customerEmail, ServiceCatalog.DEPOSIT, ref);
+            bookings.attachCheckout(b, null, checkout.url(), checkout.accessCode());
         } catch (CustomerFacingException e) {
             bookings.fail(ref, e.getMessage());
             throw e;

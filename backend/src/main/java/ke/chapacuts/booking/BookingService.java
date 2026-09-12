@@ -139,10 +139,11 @@ public class BookingService {
         }
     }
 
-    public void attachCheckout(Booking b, String checkoutRequestId, String checkoutUrl) {
+    public void attachCheckout(Booking b, String checkoutRequestId, String checkoutUrl, String accessCode) {
         synchronized (lock) {
             b.checkoutRequestId(checkoutRequestId);
             b.checkoutUrl(checkoutUrl);
+            b.checkoutAccessCode(accessCode);
             if (checkoutRequestId != null) {
                 refByCheckoutId.put(checkoutRequestId, b.ref());
             }

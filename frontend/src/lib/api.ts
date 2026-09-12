@@ -32,6 +32,7 @@ export type Booking = {
   imageId?: string;
   paymentMethod?: 'MPESA' | 'CARD';
   checkoutUrl?: string;
+  accessCode?: string;
   receipt?: string;
   message?: string;
 };
@@ -111,8 +112,7 @@ export const api = {
   }) => request<Booking>('/api/bookings', json('POST', body)),
   payMpesa: (ref: string, phone: string) =>
     request<Booking>(`/api/bookings/${ref}/pay/mpesa`, json('POST', { phone })),
-  payCard: (ref: string, email: string) =>
-    request<Booking>(`/api/bookings/${ref}/pay/card`, json('POST', { email })),
+  payCard: (ref: string) => request<Booking>(`/api/bookings/${ref}/pay/card`, json('POST', {})),
   get: (ref: string) => request<Booking>(`/api/bookings/${encodeURIComponent(ref)}`),
   simulate: (ref: string) => request<Booking>(`/api/bookings/${ref}/simulate`, { method: 'POST' }),
   barberDay: (date?: string) =>

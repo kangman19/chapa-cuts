@@ -86,10 +86,7 @@ import Base from '../layouts/Base.astro';
       <div class="pay-option">
         <h3>Or pay by card</h3>
         <form id="card-form" novalidate>
-          <label class="field">
-            <span>Email for the receipt</span>
-            <input type="email" id="card-email" autocomplete="email" inputmode="email" required />
-          </label>
+          <p class="small muted">Opens a secure card form on this page.</p>
           <p class="form-error" id="card-error" aria-live="polite"></p>
           <button class="btn btn-secondary" type="submit">Pay KSh 1 by card</button>
         </form>
@@ -105,6 +102,9 @@ import Base from '../layouts/Base.astro';
     <div id="result"></div>
   </section>
 </Base>
+
+<!-- Paystack's card form. It only ever sees the transaction access code; the secret key stays on the server. -->
+<script is:inline src="https://js.paystack.co/v2/inline.js"></script>
 
 <script>
   import { api, ApiError, DEPOSIT, dayLabel, dayName, money, reducedMotion, shortDate, type Availability, type Booking, type Service } from '../lib/api';
@@ -143,7 +143,6 @@ import Base from '../layouts/Base.astro';
   const mpesaPhone = $<HTMLInputElement>('mpesa-phone');
   const mpesaError = $('mpesa-error');
   const cardForm = $<HTMLFormElement>('card-form');
-  const cardEmail = $<HTMLInputElement>('card-email');
   const cardError = $('card-error');
   const resultEl = $('result');
 
@@ -375,18 +374,38 @@ import Base from '../layouts/Base.astro';
     cardError.textContent = '';
     busy(cardForm, true);
     try {
-      const b = await ensureBooking();
-      booking = await api.payCard(b.ref, cardEmail.value.trim());
-      if (!booking.checkoutUrl) throw new ApiError(0, "We didn't get a card page to send you to. Nothing was charged.");
-      cardError.textContent = '';
-      window.location.href = booking.checkoutUrl;
-      return; // leave the button disabled while the browser navigates
+      // If the customer closed the card form and tapped again, reopen the same transaction.
+      if (!(booking?.status === 'AWAITING_PAYMENT' && booking.paymentMethod === 'CARD' && booking.accessCode)) {
+        const b = await ensureBooking();
+        booking = await api.payCard(b.ref);
+      }
+      if (!booking.accessCode) throw new ApiError(0, "We couldn't open the card form. Nothing was charged.");
+      openCardForm(booking);
     } catch (err: any) {
       cardError.textContent = err.message;
       if (booking && booking.status !== 'NEW') booking = null;
+    } finally {
       busy(cardForm, false);
     }
   });
+
+  /** Paystack's popup. Its onSuccess is a hint only: the booking is confirmed by our server's verify call. */
+  function openCardForm(b: Booking) {
+    const Paystack = (window as any).PaystackPop;
+    if (!Paystack) {
+      cardError.textContent = "The card form didn't load. Check your connection and try again.";
+      return;
+    }
+    new Paystack().resumeTransaction(b.accessCode, {
+      onSuccess: () => showResult(b),
+      onCancel: () => {
+        cardError.textContent = 'You closed the card form before paying. Nothing was charged. Tap the button to try again.';
+      },
+      onError: (err: { message?: string }) => {
+        cardError.textContent = err?.message ?? "The card form couldn't open. Nothing was charged.";
+      },
+    });
+  }
 
   // ---- Step 5: result -------------------------------------------------------------------------------
   function showResult(b: Booking) {

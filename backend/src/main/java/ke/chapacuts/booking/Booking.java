@@ -26,6 +26,7 @@ public class Booking {
     private Instant lastProviderCheckAt;
     private String checkoutRequestId;
     private String checkoutUrl;
+    private String checkoutAccessCode;
     private String receipt;
     private String failureMessage;
 
@@ -58,6 +59,7 @@ public class Booking {
     public Instant lastProviderCheckAt() { return lastProviderCheckAt; }
     public String checkoutRequestId() { return checkoutRequestId; }
     public String checkoutUrl() { return checkoutUrl; }
+    public String checkoutAccessCode() { return checkoutAccessCode; }
     public String receipt() { return receipt; }
     public String failureMessage() { return failureMessage; }
 
@@ -68,6 +70,7 @@ public class Booking {
     void lastProviderCheckAt(Instant at) { this.lastProviderCheckAt = at; }
     void checkoutRequestId(String id) { this.checkoutRequestId = id; }
     void checkoutUrl(String url) { this.checkoutUrl = url; }
+    void checkoutAccessCode(String code) { this.checkoutAccessCode = code; }
     void receipt(String receipt) { this.receipt = receipt; }
     void failureMessage(String message) { this.failureMessage = message; }
 }
