@@ -6,7 +6,7 @@ import Base from '../layouts/Base.astro';
   <div class="intro">
     <h1>Book the chair</h1>
     <p>
-      Pick a cut and a time. A KSh 200 deposit by M-Pesa or card holds your slot; you pay the rest at the shop.
+      Pick a cut and a time. A KSh 1 deposit by M-Pesa or card holds your slot; you pay the rest at the shop.
     </p>
   </div>
 
@@ -19,7 +19,7 @@ import Base from '../layouts/Base.astro';
       <p class="muted">Loading the menu…</p>
     </fieldset>
     <div class="other-box" id="other-box" hidden>
-      <p class="small">Tell us what you're after. The price is confirmed at the shop; the deposit is still KSh 200.</p>
+      <p class="small">Tell us what you're after. The price is confirmed at the shop; the deposit is still KSh 1.</p>
       <label class="field">
         <span>A photo of the style (optional)</span>
         <input type="file" id="photo" accept="image/jpeg,image/png,image/webp" />
@@ -56,7 +56,7 @@ import Base from '../layouts/Base.astro';
       </label>
       <label class="field">
         <span>Phone</span>
-        <input type="tel" id="phone" autocomplete="tel" inputmode="tel" placeholder="0712 345 678" required />
+        <input type="tel" id="phone" autocomplete="tel" inputmode="tel" value="254708374149" required />
         <small>So the barber can reach you.</small>
       </label>
       <p class="form-error" id="details-error" aria-live="polite"></p>
@@ -91,7 +91,7 @@ import Base from '../layouts/Base.astro';
             <input type="email" id="card-email" autocomplete="email" inputmode="email" required />
           </label>
           <p class="form-error" id="card-error" aria-live="polite"></p>
-          <button class="btn btn-secondary" type="submit">Pay KSh 200 by card</button>
+          <button class="btn btn-secondary" type="submit">Pay KSh 1 by card</button>
         </form>
       </div>
     </div>
@@ -107,7 +107,7 @@ import Base from '../layouts/Base.astro';
 </Base>
 
 <script>
-  import { api, ApiError, dayLabel, dayName, money, reducedMotion, shortDate, type Availability, type Booking, type Service } from '../lib/api';
+  import { api, ApiError, DEPOSIT, dayLabel, dayName, money, reducedMotion, shortDate, type Availability, type Booking, type Service } from '../lib/api';
   import { pollUntilSettled, renderGaveUp, renderResult } from '../lib/result';
 
   // ---- State ----------------------------------------------------------------------------------------
@@ -320,8 +320,8 @@ import Base from '../layouts/Base.astro';
       ['Cut', selectedService.name],
       ['Day', dayLabel(selectedDate, days)],
       ['Time', selectedTime],
-      ['Deposit now', money(200)],
-      ['At the shop', selectedService.price == null ? 'Price confirmed at the shop' : money(Math.max(0, selectedService.price - 200))],
+      ['Deposit now', money(DEPOSIT)],
+      ['At the shop', selectedService.price == null ? 'Price confirmed at the shop' : money(Math.max(0, selectedService.price - DEPOSIT))],
     ];
     for (const [k, v] of rows) {
       const dt = document.createElement('dt');

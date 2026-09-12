@@ -1,3 +1,6 @@
+/** Must match ServiceCatalog.DEPOSIT in the backend. */
+export const DEPOSIT = 1;
+
 export type Service = {
   id: string;
   name: string;

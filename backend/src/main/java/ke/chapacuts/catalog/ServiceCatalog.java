@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class ServiceCatalog {
 
-    public static final int DEPOSIT = 200;
+    public static final int DEPOSIT = 1;
     public static final String OTHER_ID = "other";
 
     private static final List<CutService> SERVICES = List.of(
