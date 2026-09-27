@@ -2,32 +2,45 @@
 import Base from '../layouts/Base.astro';
 ---
 
-<Base title="Chapa Cuts · Shop view">
-  <div class="intro">
+<Base title="Chapa Cuts · Shop view" nav={false}>
+  <div class="wrap page page-narrow">
+    <p class="eyebrow">The chair</p>
     <h1>Shop view</h1>
     <p class="warn">
       This page has no login. It's open to anyone with the link because this is a demo; in production it sits behind a
       barber login.
     </p>
+    <div class="days" id="days" role="group" aria-label="Day"></div>
+    <ul class="day-list" id="list" aria-live="polite">
+      <li class="day-item"><span class="day-meta">Loading…</span></li>
+    </ul>
+    <p class="status-line" id="status"></p>
   </div>
-  <div class="days" id="days" role="group" aria-label="Day"></div>
-  <ul class="day-list" id="list" aria-live="polite">
-    <li class="day-item"><span class="day-meta">Loading…</span></li>
-  </ul>
-  <p class="status-line" id="status"></p>
 </Base>
 
 <script>
-  import { api, dayName, money, prettyPhone, shortDate, type BarberDay, type BarberEntry } from '../lib/api';
+  import { api, dayName, money, prettyPhone, reducedMotion, shortDate, type BarberDay, type BarberEntry } from '../lib/api';
 
   const REFRESH_MS = 10_000;
   const daysEl = document.getElementById('days') as HTMLElement;
   const listEl = document.getElementById('list') as HTMLElement;
   const statusEl = document.getElementById('status') as HTMLElement;
 
+  // Gated once at module load: when the shop's device prefers reduced motion, we never add the
+  // "new item landed" / "status just refreshed" classes below, rather than relying on CSS alone.
+  const skipMotion = reducedMotion();
+  const renderedKeys = new Set<string>();
+
   let selectedDate: string | undefined;
   let days: string[] = [];
   let timer: number | undefined;
+
+  /** Stamps `el` with a brief "just picked" settle animation, stripped once it finishes. */
+  function markPicked(el: HTMLElement | null) {
+    if (!el) return;
+    el.classList.add('just-picked');
+    el.addEventListener('animationend', () => el.classList.remove('just-picked'), { once: true });
+  }
 
   function el<K extends keyof HTMLElementTagNameMap>(tag: K, className?: string, text?: string) {
     const node = document.createElement(tag);
@@ -47,6 +60,7 @@ import Base from '../layouts/Base.astro';
         selectedDate = d;
         renderDays();
         load();
+        markPicked(daysEl.querySelector<HTMLElement>('[aria-pressed="true"]'));
       });
       daysEl.append(btn);
     }
@@ -54,6 +68,11 @@ import Base from '../layouts/Base.astro';
 
   function renderEntry(e: BarberEntry): HTMLElement {
     const li = el('li', 'day-item');
+    const key = e.ref ?? `${e.time}-seeded`;
+    if (!renderedKeys.has(key)) {
+      renderedKeys.add(key);
+      if (!skipMotion) li.classList.add('day-item-new');
+    }
     li.append(el('span', 'day-time', e.time));
     if (e.seeded) {
       li.classList.add('seeded');
@@ -110,6 +129,12 @@ import Base from '../layouts/Base.astro';
     for (const e of day.bookings) listEl.append(renderEntry(e));
     const now = new Date();
     statusEl.textContent = `Updated ${now.toLocaleTimeString('en-KE', { hour: '2-digit', minute: '2-digit' })} · refreshes every 10 seconds`;
+    if (!skipMotion) {
+      statusEl.classList.remove('status-pulse');
+      void statusEl.offsetWidth; // restart the animation even if the previous pulse already finished
+      statusEl.classList.add('status-pulse');
+      statusEl.addEventListener('animationend', () => statusEl.classList.remove('status-pulse'), { once: true });
+    }
   }
 
   load();

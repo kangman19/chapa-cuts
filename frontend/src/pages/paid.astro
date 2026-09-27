@@ -3,11 +3,18 @@ import Base from '../layouts/Base.astro';
 ---
 
 <Base title="Chapa Cuts · Your booking">
-  <div class="intro">
+  <div class="wrap page page-narrow">
+    <p class="eyebrow">Card payment</p>
     <h1>Your booking</h1>
-  </div>
-  <div id="result">
-    <p class="muted">Checking with the card provider…</p>
+    <div id="result">
+      <article class="ticket ticket-skeleton" aria-hidden="true">
+        <div class="skeleton-line skeleton-line--wide"></div>
+        <div class="skeleton-line skeleton-line--short"></div>
+        <div class="skeleton-line skeleton-line--wide"></div>
+        <div class="skeleton-line skeleton-line--short"></div>
+      </article>
+      <p class="muted">Checking with the card provider…</p>
+    </div>
   </div>
 </Base>
 

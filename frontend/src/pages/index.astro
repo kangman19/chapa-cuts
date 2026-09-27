@@ -1,105 +1,232 @@
 ---
 import Base from '../layouts/Base.astro';
+import { DEPOSIT, money } from '../lib/api';
+
+const deposit = money(DEPOSIT);
+const TICKER = ['Fades', 'Tapers', 'Line-ups', 'Beard trims', 'Kids cuts', 'Book online', 'Pay by M-Pesa'];
 ---
 
 <Base title="Chapa Cuts · Book the chair">
-  <div class="intro">
-    <h1>Book the chair</h1>
-    <p>
-      Pick a cut and a time. A KSh 1 deposit by M-Pesa or card holds your slot; you pay the rest at the shop.
-    </p>
+  <section class="hero" aria-labelledby="h-hero">
+    <div class="wrap hero-inner">
+      <div class="hero-copy">
+        <p class="eyebrow">Kinyozi · One chair · By appointment</p>
+        <h1 class="hero-title" id="h-hero">Sharp cuts.<br /><em>No queue.</em></h1>
+        <p class="hero-lede">
+          Pick your cut and a 30-minute slot, then hold the chair with a {deposit} deposit by M-Pesa or card. You pay the
+          rest at the shop.
+        </p>
+        <div class="hero-cta">
+          <a class="btn btn-lg" href="#book">Book your chair</a>
+          <a class="btn btn-ghost btn-lg" href="#menu">See the menu</a>
+        </div>
+        <dl class="hero-facts">
+          <div><dt>Open</dt><dd>9:00–19:00</dd></div>
+          <div><dt>Each cut</dt><dd>30 min</dd></div>
+          <div><dt>Deposit</dt><dd>{deposit}</dd></div>
+        </dl>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <div class="big-pole">
+          <span class="big-pole-cap"></span>
+          <span class="big-pole-glass"></span>
+          <span class="big-pole-cap big-pole-cap--base"></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker-track">
+      {
+        [0, 1].map(() => (
+          <div class="ticker-group">
+            {[...TICKER, ...TICKER].map((word) => (
+              <>
+                <span>{word}</span>
+                <span class="ticker-mark" />
+              </>
+            ))}
+          </div>
+        ))
+      }
+    </div>
   </div>
 
-  <section class="step" id="step-cut" aria-labelledby="h-cut">
-    <div class="step-title">
-      <span class="step-num" aria-hidden="true">1</span>
-      <h2 id="h-cut">Pick a cut</h2>
-    </div>
-    <fieldset class="cuts" id="cuts" aria-label="Cuts">
-      <p class="muted">Loading the menu…</p>
-    </fieldset>
-    <div class="other-box" id="other-box" hidden>
-      <p class="small">Tell us what you're after. The price is confirmed at the shop; the deposit is still KSh 1.</p>
-      <label class="field">
-        <span>A photo of the style (optional)</span>
-        <input type="file" id="photo" accept="image/jpeg,image/png,image/webp" />
-        <small>JPEG, PNG or WebP, up to 5 MB.</small>
-      </label>
-      <img class="thumb" id="thumb" alt="Preview of the photo you chose" hidden />
-      <p class="form-error" id="photo-error" aria-live="polite"></p>
-      <label class="field">
-        <span>Describe it</span>
-        <textarea id="note" maxlength="500" placeholder="e.g. low fade with a hard part on the left"></textarea>
-      </label>
-    </div>
-  </section>
-
-  <section class="step" id="step-time" aria-labelledby="h-time" hidden>
-    <div class="step-title">
-      <span class="step-num" aria-hidden="true">2</span>
-      <h2 id="h-time">Pick a time</h2>
-    </div>
-    <div class="days" id="days" role="group" aria-label="Day"></div>
-    <div class="slots" id="slots" role="group" aria-label="Time"></div>
-    <p class="slots-note">Crossed-out times are taken. Each cut takes 30 minutes.</p>
-  </section>
-
-  <section class="step" id="step-details" aria-labelledby="h-details" hidden>
-    <div class="step-title">
-      <span class="step-num" aria-hidden="true">3</span>
-      <h2 id="h-details">Your details</h2>
-    </div>
-    <form id="details-form" novalidate>
-      <label class="field">
-        <span>Name</span>
-        <input type="text" id="name" autocomplete="name" maxlength="80" required />
-      </label>
-      <label class="field">
-        <span>Phone</span>
-        <input type="tel" id="phone" autocomplete="tel" inputmode="tel" value="254708374149" required />
-        <small>So the barber can reach you.</small>
-      </label>
-      <p class="form-error" id="details-error" aria-live="polite"></p>
-      <button class="btn" type="submit">Continue</button>
-    </form>
-  </section>
-
-  <section class="step" id="step-pay" aria-labelledby="h-pay" hidden>
-    <div class="step-title">
-      <span class="step-num" aria-hidden="true">4</span>
-      <h2 id="h-pay">Hold your slot</h2>
-    </div>
-    <dl class="summary" id="summary"></dl>
-    <div class="pay-options">
-      <div class="pay-option">
-        <h3>Pay the deposit with M-Pesa</h3>
-        <form id="mpesa-form" novalidate>
-          <label class="field">
-            <span>M-Pesa number</span>
-            <input type="tel" id="mpesa-phone" inputmode="tel" autocomplete="tel" required />
-            <small>Prompts only reach Safaricom numbers.</small>
-          </label>
-          <p class="form-error" id="mpesa-error" aria-live="polite"></p>
-          <button class="btn" type="submit">Send M-Pesa prompt</button>
-        </form>
+  <section class="section" id="menu" aria-labelledby="h-menu">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">The menu</p>
+        <h2 id="h-menu">Cuts &amp; prices</h2>
+        <p>Every appointment is 30 minutes in the chair. The {deposit} deposit comes off what you pay at the shop.</p>
       </div>
-      <div class="pay-option">
-        <h3>Or pay by card</h3>
-        <form id="card-form" novalidate>
-          <p class="small muted">Opens a secure card form on this page.</p>
-          <p class="form-error" id="card-error" aria-live="polite"></p>
-          <button class="btn btn-secondary" type="submit">Pay KSh 1 by card</button>
-        </form>
+      <ul class="menu" id="menu-list">
+        <li class="menu-loading muted">Loading the menu…</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section section-alt" id="how" aria-labelledby="h-how">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">How it works</p>
+        <h2 id="h-how">Booked in a minute</h2>
+      </div>
+      <ol class="how">
+        <li class="how-item">
+          <span class="how-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><path d="M20 4 8.12 15.88M14.47 14.48 20 20M8.12 8.12 12 12"></path></svg>
+          </span>
+          <h3>Choose your cut</h3>
+          <p>From a quick line-up to a full cut and beard trim. After something specific? Describe it and send a photo.</p>
+        </li>
+        <li class="how-item">
+          <span class="how-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+          </span>
+          <h3>Pick a time</h3>
+          <p>Today, tomorrow or the day after, in 30-minute slots from 9:00 to 18:30.</p>
+        </li>
+        <li class="how-item">
+          <span class="how-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2.5" width="10" height="19" rx="2"></rect><path d="M11 18.5h2"></path></svg>
+          </span>
+          <h3>Hold it with {deposit}</h3>
+          <p>Pay the deposit by M-Pesa or card and you get a booking reference. Give it at the shop and pay the rest there.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="section" id="book" aria-labelledby="h-book">
+    <div class="wrap book-inner">
+      <div class="section-head book-head">
+        <p class="eyebrow">Book the chair</p>
+        <h2 id="h-book">Your appointment</h2>
+        <p>Pick a cut and a time. Your slot is held the moment the deposit goes through.</p>
+        <ul class="checks">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4.5 4.5L19 7"></path></svg>30 minutes in the chair, just you</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4.5 4.5L19 7"></path></svg>{deposit} deposit by M-Pesa or card</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4.5 4.5L19 7"></path></svg>The rest is paid at the shop</li>
+        </ul>
+      </div>
+
+      <div class="booking">
+        <section class="step" id="step-cut" aria-labelledby="h-cut">
+          <div class="step-title">
+            <span class="step-num" aria-hidden="true">1</span>
+            <h3 id="h-cut">Pick a cut</h3>
+          </div>
+          <fieldset class="cuts" id="cuts" aria-label="Cuts">
+            <p class="muted">Loading the menu…</p>
+          </fieldset>
+          <div class="other-box" id="other-box" hidden>
+            <p class="small">Tell us what you're after. The price is confirmed at the shop; the deposit is still {deposit}.</p>
+            <label class="field">
+              <span>A photo of the style (optional)</span>
+              <input type="file" id="photo" accept="image/jpeg,image/png,image/webp" />
+              <small>JPEG, PNG or WebP, up to 5 MB.</small>
+            </label>
+            <img class="thumb" id="thumb" alt="Preview of the photo you chose" hidden />
+            <p class="form-error" id="photo-error" aria-live="polite"></p>
+            <label class="field">
+              <span>Describe it</span>
+              <textarea id="note" maxlength="500" placeholder="e.g. low fade with a hard part on the left"></textarea>
+            </label>
+          </div>
+        </section>
+
+        <section class="step" id="step-time" aria-labelledby="h-time" hidden>
+          <div class="step-title">
+            <span class="step-num" aria-hidden="true">2</span>
+            <h3 id="h-time">Pick a time</h3>
+          </div>
+          <div class="days" id="days" role="group" aria-label="Day"></div>
+          <div class="slots" id="slots" role="group" aria-label="Time"></div>
+          <p class="slots-note">Crossed-out times are taken. Each cut takes 30 minutes.</p>
+        </section>
+
+        <section class="step" id="step-details" aria-labelledby="h-details" hidden>
+          <div class="step-title">
+            <span class="step-num" aria-hidden="true">3</span>
+            <h3 id="h-details">Your details</h3>
+          </div>
+          <form id="details-form" novalidate>
+            <div class="field-row">
+              <label class="field">
+                <span>Name</span>
+                <input type="text" id="name" autocomplete="name" maxlength="80" required />
+              </label>
+              <label class="field">
+                <span>Phone</span>
+                <input type="tel" id="phone" autocomplete="tel" inputmode="tel" value="254708374149" required />
+                <small>So the barber can reach you.</small>
+              </label>
+            </div>
+            <p class="form-error" id="details-error" aria-live="polite"></p>
+            <button class="btn" type="submit">Continue</button>
+          </form>
+        </section>
+
+        <section class="step" id="step-pay" aria-labelledby="h-pay" hidden>
+          <div class="step-title">
+            <span class="step-num" aria-hidden="true">4</span>
+            <h3 id="h-pay">Hold your slot</h3>
+          </div>
+          <dl class="summary" id="summary"></dl>
+          <div class="pay-options">
+            <div class="pay-option">
+              <h4>Pay the deposit with M-Pesa</h4>
+              <form id="mpesa-form" novalidate>
+                <label class="field">
+                  <span>M-Pesa number</span>
+                  <input type="tel" id="mpesa-phone" inputmode="tel" autocomplete="tel" required />
+                  <small>Prompts only reach Safaricom numbers.</small>
+                </label>
+                <p class="form-error" id="mpesa-error" aria-live="polite"></p>
+                <button class="btn" type="submit">Send M-Pesa prompt</button>
+              </form>
+            </div>
+            <div class="pay-option">
+              <h4>Or pay by card</h4>
+              <form id="card-form" novalidate>
+                <p class="small muted">Opens a secure card form on this page.</p>
+                <p class="form-error" id="card-error" aria-live="polite"></p>
+                <button class="btn btn-secondary" type="submit">Pay {deposit} by card</button>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <section class="step" id="step-result" aria-labelledby="h-result" hidden>
+          <div class="step-title">
+            <span class="step-num" aria-hidden="true">5</span>
+            <h3 id="h-result">Your booking</h3>
+          </div>
+          <div id="result"></div>
+        </section>
       </div>
     </div>
   </section>
 
-  <section class="step" id="step-result" aria-labelledby="h-result" hidden>
-    <div class="step-title">
-      <span class="step-num" aria-hidden="true">5</span>
-      <h2 id="h-result">Your booking</h2>
+  <section class="section section-alt" id="visit" aria-labelledby="h-visit">
+    <div class="wrap visit-inner">
+      <div>
+        <p class="eyebrow">Visit</p>
+        <h2 id="h-visit">Opening hours</h2>
+        <p class="muted">
+          One chair and one barber, so your appointment gets the full 30 minutes. Arrive a few minutes early and give
+          your booking reference at the shop.
+        </p>
+        <a class="btn" href="#book">Book your chair</a>
+      </div>
+      <dl class="hours">
+        <div class="hours-row"><dt>Open</dt><dd>9:00 – 19:00</dd></div>
+        <div class="hours-row"><dt>Last appointment</dt><dd>18:30</dd></div>
+        <div class="hours-row"><dt>Book ahead</dt><dd>Up to 2 days</dd></div>
+        <div class="hours-row"><dt>Deposit</dt><dd>M-Pesa or card</dd></div>
+      </dl>
     </div>
-    <div id="result"></div>
   </section>
 </Base>
 
@@ -120,8 +247,20 @@ import Base from '../layouts/Base.astro';
   let booking: Booking | null = null;
   let poller: { stop: () => void } | null = null;
 
+  /** One line under each cut on the price board. Names and prices come from the API; this is only the blurb. */
+  const CUT_NOTES: Record<string, string> = {
+    taper: 'Short and tidy at the temples and neckline, blended up into the length on top.',
+    skin: 'Faded right down to the skin at the sides and back, then blended up.',
+    lineup: 'Crisp edges on the hairline, temples and neckline. The length stays as it is.',
+    beard: 'A full haircut, plus the beard shaped and lined up to match.',
+    kids: 'A clean, simple cut for the little ones.',
+    other: 'Got a style in mind? Describe it and send a photo. The price is confirmed at the shop.',
+  };
+
   // ---- Elements -------------------------------------------------------------------------------------
   const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+  const menuEl = $('menu-list');
+  const stepCut = $('step-cut');
   const stepTime = $('step-time');
   const stepDetails = $('step-details');
   const stepPay = $('step-pay');
@@ -149,9 +288,18 @@ import Base from '../layouts/Base.astro';
   function reveal(section: HTMLElement) {
     const wasHidden = section.hidden;
     section.hidden = false;
+    section.classList.add('step-enter');
+    section.addEventListener('animationend', () => section.classList.remove('step-enter'), { once: true });
     if (wasHidden) {
       section.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'start' });
     }
+  }
+
+  /** Stamps `el` with a brief "just picked" settle animation, stripped once it finishes. */
+  function markPicked(el: HTMLElement | null) {
+    if (!el) return;
+    el.classList.add('just-picked');
+    el.addEventListener('animationend', () => el.classList.remove('just-picked'), { once: true });
   }
 
   const ORDER = [stepTime, stepDetails, stepPay, stepResult];
@@ -161,6 +309,38 @@ import Base from '../layouts/Base.astro';
     for (const s of ORDER.slice(ORDER.indexOf(section))) s.hidden = true;
     booking = null;
     poller?.stop();
+  }
+
+  // ---- Price board ----------------------------------------------------------------------------------
+  function renderMenu() {
+    menuEl.replaceChildren();
+    for (const s of services) {
+      const li = Object.assign(document.createElement('li'), { className: 'menu-item' });
+      const line = Object.assign(document.createElement('div'), { className: 'menu-line' });
+      line.append(
+        Object.assign(document.createElement('h3'), { className: 'menu-name', textContent: s.name }),
+        Object.assign(document.createElement('span'), { className: 'menu-dots' }),
+        s.price == null
+          ? Object.assign(document.createElement('span'), { className: 'menu-price menu-price--shop', textContent: 'Priced at the shop' })
+          : Object.assign(document.createElement('span'), { className: 'menu-price', textContent: money(s.price) }),
+      );
+      li.append(line);
+      if (CUT_NOTES[s.id]) li.append(Object.assign(document.createElement('p'), { className: 'menu-desc', textContent: CUT_NOTES[s.id] }));
+      const book = Object.assign(document.createElement('button'), { type: 'button', className: 'menu-book', textContent: 'Book this' });
+      book.setAttribute('aria-label', `Book: ${s.name}`);
+      book.addEventListener('click', () => bookFromMenu(s.id));
+      li.append(book);
+      menuEl.append(li);
+    }
+  }
+
+  /** "Book this" on the price board: picks that cut in step 1, then shows the next thing to fill in. */
+  function bookFromMenu(id: string) {
+    const input = cutsEl.querySelector<HTMLInputElement>(`input[value="${CSS.escape(id)}"]`);
+    if (!input) return;
+    if (!input.checked) input.click(); // fires change, which runs chooseCut
+    const next = id === 'other' ? stepCut : stepTime; // "Something else" still needs its description filled in
+    next.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'start' });
   }
 
   // ---- Step 1: cut ----------------------------------------------------------------------------------
@@ -194,6 +374,7 @@ import Base from '../layouts/Base.astro';
     if (!selectedDate) selectedDate = days[0];
     renderDays();
     loadSlots();
+    markPicked(cutsEl.querySelector<HTMLElement>('.cut:has(input:checked)'));
   }
 
   photoInput.addEventListener('change', async () => {
@@ -234,6 +415,7 @@ import Base from '../layouts/Base.astro';
         hideFrom(stepDetails);
         renderDays();
         loadSlots();
+        markPicked(daysEl.querySelector<HTMLElement>('[aria-pressed="true"]'));
       });
       daysEl.append(btn);
     }
@@ -279,9 +461,13 @@ import Base from '../layouts/Base.astro';
 
   function chooseTime(time: string) {
     selectedTime = time;
+    let picked: HTMLElement | null = null;
     for (const b of slotsEl.querySelectorAll<HTMLButtonElement>('.slot:not([disabled])')) {
-      b.setAttribute('aria-pressed', String(b.textContent === time));
+      const isMatch = b.textContent === time;
+      b.setAttribute('aria-pressed', String(isMatch));
+      if (isMatch) picked = b;
     }
+    markPicked(picked);
     hideFrom(stepPay);
     reveal(stepDetails);
     if (!nameInput.value) nameInput.focus({ preventScroll: true });
@@ -442,8 +628,10 @@ import Base from '../layouts/Base.astro';
       const [s, av] = await Promise.all([api.services(), api.availability()]);
       services = s;
       days = av.days;
+      renderMenu();
       renderCuts();
     } catch (err: any) {
+      menuEl.replaceChildren(Object.assign(document.createElement('li'), { className: 'menu-loading error-text', textContent: err.message }));
       cutsEl.replaceChildren(Object.assign(document.createElement('p'), { className: 'error-text', textContent: err.message }));
     }
   })();

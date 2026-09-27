@@ -4,9 +4,12 @@ import '../styles/site.css';
 interface Props {
   title: string;
   description?: string;
+  /** The customer-facing header links and "Book now" button. Off for the shop's own view. */
+  nav?: boolean;
 }
 
-const { title, description = 'Book the chair at Chapa Cuts. KSh 1 holds your slot; pay the rest at the shop.' } = Astro.props;
+const { title, description = 'Book the chair at Chapa Cuts. KSh 1 holds your slot; pay the rest at the shop.', nav = true } = Astro.props;
+const year = new Date().getFullYear();
 ---
 
 <!doctype html>
@@ -15,26 +18,61 @@ const { title, description = 'Book the chair at Chapa Cuts. KSh 1 holds your slo
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
-    <meta name="color-scheme" content="light" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#0e0d0c" />
     <title>{title}</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:ital,wght@0,400;0,600;1,400&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:ital,wght@0,400;0,600;1,400&family=DM+Serif+Display:ital@1&display=swap"
     />
   </head>
   <body>
     <a class="skip" href="#main">Skip to content</a>
     <header class="masthead">
-      <a class="brand" href="/">Chapa Cuts</a>
-      <span class="pole" aria-hidden="true"></span>
+      <div class="wrap masthead-inner">
+        <a class="brand" href="/"><span class="pole" aria-hidden="true"></span>Chapa Cuts</a>
+        {
+          nav ? (
+            <>
+              <nav class="nav" aria-label="Main">
+                <a href="/#menu">Menu</a>
+                <a href="/#how">How it works</a>
+                <a href="/#visit">Hours</a>
+              </nav>
+              <a class="btn btn-sm masthead-cta" href="/#book">Book now</a>
+            </>
+          ) : (
+            <span class="masthead-tag">Shop view</span>
+          )
+        }
+      </div>
     </header>
     <main id="main">
       <slot />
     </main>
     <footer class="foot">
-      <p>Chapa Cuts · one chair, one barber · open 9:00 to 19:00</p>
+      <div class="wrap foot-inner">
+        <div>
+          <a class="brand" href="/"><span class="pole" aria-hidden="true"></span>Chapa Cuts</a>
+          <p>One chair, one barber. Open 9:00 to 19:00.</p>
+        </div>
+        {
+          nav && (
+            <nav class="foot-nav" aria-label="Footer">
+              <a href="/#menu">Menu</a>
+              <a href="/#how">How it works</a>
+              <a href="/#book">Book</a>
+              <a href="/#visit">Hours</a>
+            </nav>
+          )
+        }
+      </div>
+      <div class="wrap foot-base">
+        <p>© {year} Chapa Cuts</p>
+      </div>
     </footer>
   </body>
 </html>

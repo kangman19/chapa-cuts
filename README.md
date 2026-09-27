@@ -1,6 +1,6 @@
 # Chapa Cuts
 
-Booking site for a single-chair barbershop. A customer picks a cut and a 30-minute slot, pays a KSh 200 deposit
+Booking site for a single-chair barbershop. A customer picks a cut and a 30-minute slot, pays a KSh 1 deposit
 by M-Pesa (Daraja sandbox) or card (Paystack test mode) to hold the slot, and pays the balance at the shop.
 
 This is a sandbox demo. Everything is in memory and disappears on restart.
